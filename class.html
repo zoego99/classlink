@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>課程滿意度與學習反饋調查</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #311042 100%);
+            min-height: 100vh;
+        }
+
+        /* Custom decorative gradient shapes */
+        .glow-shape-1 {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .glow-shape-2 {
+            position: absolute;
+            bottom: -80px;
+            right: -80px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Star rating transition styles */
+        .star-btn {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+        }
+        .star-btn:hover {
+            transform: scale(1.25);
+        }
+
+        /* Fade and slide transitions */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="relative text-slate-800 flex items-center justify-center p-4 sm:p-6 md:p-10 overflow-x-hidden">
+
+    <div class="glow-shape-1"></div>
+    <div class="glow-shape-2"></div>
+
+    <!-- Main Container Card -->
+    <main class="w-full max-w-2xl bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-10 z-10 my-6 transition-all duration-300">
+        
+        <header class="text-center mb-8 pb-6 border-b border-slate-100">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30 mb-4 transform hover:rotate-6 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                課 程 滿 意 度 調 查 🎓
+            </h1>
+            <p class="text-slate-500 text-sm sm:text-base mt-2">
+                感謝參與本次課程！請花 2 分鐘回饋寶貴意見，讓我們持續精進教學品質。
+            </p>
+        </header>
+
+        <!-- ==========================================
+             SECTION 1: QUESTIONNAIRE FORM (問卷表單區塊)
+             ========================================== -->
+        <form id="surveyForm" onsubmit="handleFormSubmit(event)" novalidate class="space-y-7">
+
+            <!-- Field 1: 姓名 (Key: name) -->
+            <div class="form-group">
+                <label for="nameInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                    1. 姓名 / 稱呼 <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <input type="text" id="nameInput" name="name" placeholder="請輸入您的姓名"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-200 text-slate-800 placeholder-slate-400 bg-slate-50/50 focus:bg-white"
+                        oninput="clearFieldError('name')">
+                    <span id="nameError" class="hidden text-xs text-rose-500 mt-1 space-x-1 flex items-center">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <span>請填寫姓名</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Field 2: 上課日期 (Key: date) -->
+            <div class="form-group">
+                <label for="dateInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                    2. 上課日期 <span class="text-rose-500">*</span>
+                </label>
+                <div class="relative">
+                    <input type="date" id="dateInput" name="date"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-200 text-slate-800 bg-slate-50/50 focus:bg-white"
+                        onchange="clearFieldError('date')">
+                    <span id="dateError" class="hidden text-xs text-rose-500 mt-1 space-x-1 flex items-center">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <span>請選擇上課日期</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Field 3: 課程場次 (Key: session) -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    3. 課程場次 <span class="text-rose-500">*</span>
+                </label>
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="session" value="早班" class="peer hidden" onchange="clearFieldError('session')">
+                        <div class="py-3 px-4 text-center rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-700 peer-checked:font-semibold hover:border-indigo-300 transition-all text-sm text-slate-600">
+                            🌅 早班
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="session" value="午班" class="peer hidden" onchange="clearFieldError('session')">
+                        <div class="py-3 px-4 text-center rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-700 peer-checked:font-semibold hover:border-indigo-300 transition-all text-sm text-slate-600">
+                            ☀️ 午班
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="session" value="晚班" class="peer hidden" onchange="clearFieldError('session')">
+                        <div class="py-3 px-4 text-center rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:text-indigo-700 peer-checked:font-semibold hover:border-indigo-300 transition-all text-sm text-slate-600">
+                            🌙 晚班
+                        </div>
+                    </label>
+                </div>
+                <span id="sessionError" class="hidden text-xs text-rose-500 mt-1 space-x-1 flex items-center">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span>請選擇一個課程場次</span>
+                </span>
+            </div>
+
+            <!-- Field 4: 講師教學表現 (Key: instructor_rating) -->
+            <div class="form-group bg-indigo-50/40 p-4 sm:p-5 rounded-2xl border border-indigo-100/70">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-semibold text-slate-700">
+                        4. 講師教學表現 <span class="text-rose-500">*</span>
+                    </label>
+                    <span id="instructorRatingText" class="text-xs font-semibold text-indigo-600 min-w-[70px] text-right">請選擇評分</span>
+                </div>
+                <!-- Interactive Star Component -->
+                <div class="flex items-center space-x-2 py-1" id="instructorStarGroup">
+                    <!-- Stars 1 to 5 generated via script interaction -->
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="1" onclick="setRating('instructor', 1)" onmouseenter="previewRating('instructor', 1)" onmouseleave="resetStarPreview('instructor')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="2" onclick="setRating('instructor', 2)" onmouseenter="previewRating('instructor', 2)" onmouseleave="resetStarPreview('instructor')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="3" onclick="setRating('instructor', 3)" onmouseenter="previewRating('instructor', 3)" onmouseleave="resetStarPreview('instructor')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="4" onclick="setRating('instructor', 4)" onmouseenter="previewRating('instructor', 4)" onmouseleave="resetStarPreview('instructor')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="5" onclick="setRating('instructor', 5)" onmouseenter="previewRating('instructor', 5)" onmouseleave="resetStarPreview('instructor')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                </div>
+                <input type="hidden" id="instructorRatingInput" name="instructor_rating" value="0">
+                <span id="instructorRatingError" class="hidden text-xs text-rose-500 mt-1 space-x-1 flex items-center">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span>請給予講師教學評分</span>
+                </span>
+            </div>
+
+            <!-- Field 5: 課程內容實用性 (Key: content_rating) -->
+            <div class="form-group bg-purple-50/40 p-4 sm:p-5 rounded-2xl border border-purple-100/70">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-semibold text-slate-700">
+                        5. 課程內容實用性 <span class="text-rose-500">*</span>
+                    </label>
+                    <span id="contentRatingText" class="text-xs font-semibold text-purple-600 min-w-[70px] text-right">請選擇評分</span>
+                </div>
+                <div class="flex items-center space-x-2 py-1" id="contentStarGroup">
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="1" onclick="setRating('content', 1)" onmouseenter="previewRating('content', 1)" onmouseleave="resetStarPreview('content')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="2" onclick="setRating('content', 2)" onmouseenter="previewRating('content', 2)" onmouseleave="resetStarPreview('content')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="3" onclick="setRating('content', 3)" onmouseenter="previewRating('content', 3)" onmouseleave="resetStarPreview('content')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="4" onclick="setRating('content', 4)" onmouseenter="previewRating('content', 4)" onmouseleave="resetStarPreview('content')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                    <button type="button" class="star-btn text-slate-300 focus:outline-none" data-rating="5" onclick="setRating('content', 5)" onmouseenter="previewRating('content', 5)" onmouseleave="resetStarPreview('content')">
+                        <svg class="w-9 h-9 fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                    </button>
+                </div>
+                <input type="hidden" id="contentRatingInput" name="content_rating" value="0">
+                <span id="contentRatingError" class="hidden text-xs text-rose-500 mt-1 space-x-1 flex items-center">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <span>請給予課程內容評分</span>
+                </span>
+            </div>
+
+            <!-- Field 6: 學習到的技能 (Key: skills - array) -->
+            <div class="form-group">
+                <label class="block text-sm font-semibold text-slate-700 mb-2">
+                    6. 學習到的技能 <span class="text-slate-400 font-normal text-xs">(可複選)</span>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="skills" value="UI/UX 實戰設計觀念" class="peer hidden">
+                        <div class="py-2.5 px-3.5 flex items-center space-x-2 rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 hover:border-purple-300 transition-all text-xs sm:text-sm text-slate-600">
+                            <span class="w-4 h-4 rounded border border-slate-300 peer-checked:border-purple-600 peer-checked:bg-purple-600 flex items-center justify-center text-white transition-colors">✓</span>
+                            <span>🎨 UI/UX 實戰設計觀念</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="skills" value="前端切版與互動實作" class="peer hidden">
+                        <div class="py-2.5 px-3.5 flex items-center space-x-2 rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 hover:border-purple-300 transition-all text-xs sm:text-sm text-slate-600">
+                            <span class="w-4 h-4 rounded border border-slate-300 peer-checked:border-purple-600 peer-checked:bg-purple-600 flex items-center justify-center text-white transition-colors">✓</span>
+                            <span>💻 前端切版與互動實作</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="skills" value="效能優化與最佳實踐" class="peer hidden">
+                        <div class="py-2.5 px-3.5 flex items-center space-x-2 rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 hover:border-purple-300 transition-all text-xs sm:text-sm text-slate-600">
+                            <span class="w-4 h-4 rounded border border-slate-300 peer-checked:border-purple-600 peer-checked:bg-purple-600 flex items-center justify-center text-white transition-colors">✓</span>
+                            <span>⚡ 效能優化與最佳實踐</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="checkbox" name="skills" value="開發工具與自動化工作流" class="peer hidden">
+                        <div class="py-2.5 px-3.5 flex items-center space-x-2 rounded-xl border border-slate-200 bg-slate-50/50 peer-checked:bg-purple-50 peer-checked:border-purple-500 peer-checked:text-purple-700 hover:border-purple-300 transition-all text-xs sm:text-sm text-slate-600">
+                            <span class="w-4 h-4 rounded border border-slate-300 peer-checked:border-purple-600 peer-checked:bg-purple-600 flex items-center justify-center text-white transition-colors">✓</span>
+                            <span>🛠️ 開發工具與自動化工作流</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Field 7: 整體建議 (Key: feedback) -->
+            <div class="form-group">
+                <label for="feedbackInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                    7. 整體建議與心得 <span class="text-slate-400 font-normal text-xs">(選填)</span>
+                </label>
+                <textarea id="feedbackInput" name="feedback" rows="4" placeholder="歡迎留下您對課程、講師或教材的任何想法與建議..."
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all duration-200 text-slate-800 placeholder-slate-400 bg-slate-50/50 focus:bg-white resize-none"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-2">
+                <button type="submit" id="submitBtn"
+                    class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-semibold text-base shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer">
+                    <span id="submitBtnText">送出問卷</span>
+                    <div id="submitSpinner" class="spinner hidden"></div>
+                </button>
+            </div>
+
+        </form>
+
+        <!-- ==========================================
+             SECTION 2: THANK YOU PAGE (送出成功頁面)
+             ========================================== -->
+        <div id="thankYouSection" class="hidden text-center space-y-6 fade-in">
+            <!-- Icon -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 mb-2">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800">問卷送出成功！</h2>
+                <p class="text-slate-600 mt-2 text-sm sm:text-base">
+                    感謝您撥空填寫問卷！您的意見對我們非常重要 🙏
+                </p>
+            </div>
+
+            <!-- Data Summary Card -->
+            <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 text-left space-y-3.5 shadow-inner">
+                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-2.5 flex items-center space-x-1.5">
+                    <span>📋</span>
+                    <span>您的填寫內容摘要</span>
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <span class="text-slate-400 text-xs block">姓名 / 稱呼</span>
+                        <span id="summaryName" class="font-medium text-slate-800">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-xs block">上課日期</span>
+                        <span id="summaryDate" class="font-medium text-slate-800">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-xs block">課程場次</span>
+                        <span id="summarySession" class="font-medium text-slate-800">-</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-xs block">講師教學表現</span>
+                        <div id="summaryInstructorRating" class="flex items-center space-x-1 text-amber-400 font-semibold"></div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 text-xs block">課程內容實用性</span>
+                        <div id="summaryContentRating" class="flex items-center space-x-1 text-amber-400 font-semibold"></div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 text-xs block mb-1">學習到的技能</span>
+                        <div id="summarySkills" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <span class="text-slate-400 text-xs block">整體建議與心得</span>
+                        <p id="summaryFeedback" class="text-slate-700 bg-white p-3 rounded-lg border border-slate-200/60 mt-1 italic text-xs sm:text-sm min-h-[50px] whitespace-pre-line"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="pt-2">
+                <button type="button" onclick="resetFormState()"
+                    class="w-full py-3.5 px-6 rounded-xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100/60 text-indigo-700 font-semibold text-sm transition-all duration-200 flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>重新填寫問卷</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        /**
+         * Google Apps Script Web App API 網址
+         * 將問卷 JSON POST 傳送至 Google 雲端試算表
+         */
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1C2UZNnf4xQOIwdb8G47w5uVTjFwJ7i4tHTtSohGwLZl8ynePZixLUjW5o0ub4Ybk/exec';
+
+        // Star rating descriptions text array
+        const ratingLabels = ['', '1分 - 有待改進', '2分 - 尚可接受', '3分 - 普通平順', '4分 - 滿意推薦', '5分 - 極度滿意！'];
+
+        // State storage for selected ratings
+        const selectedRatings = {
+            instructor: 0,
+            content: 0
+        };
+
+        /**
+         * Interactive Star Rating logic
+         * @param {string} category - 'instructor' or 'content'
+         * @param {number} rating - 1 to 5 rating number
+         */
+        function setRating(category, rating) {
+            selectedRatings[category] = rating;
+            document.getElementById(`${category}RatingInput`).value = rating;
+            updateStarUI(category, rating);
+            clearFieldError(`${category}Rating`);
+        }
+
+        function previewRating(category, rating) {
+            updateStarUI(category, rating);
+        }
+
+        function resetStarPreview(category) {
+            updateStarUI(category, selectedRatings[category]);
+        }
+
+        function updateStarUI(category, rating) {
+            const container = document.getElementById(`${category}StarGroup`);
+            const labelEl = document.getElementById(`${category}Text`);
+            const buttons = container.querySelectorAll('.star-btn');
+
+            buttons.forEach((btn, idx) => {
+                const starIndex = idx + 1;
+                if (starIndex <= rating) {
+                    btn.classList.remove('text-slate-300');
+                    btn.classList.add('text-amber-400');
+                } else {
+                    btn.classList.remove('text-amber-400');
+                    btn.classList.add('text-slate-300');
+                }
+            });
+
+            labelEl.textContent = rating > 0 ? ratingLabels[rating] : '請選擇評分';
+        }
+
+        /**
+         * Form Validation Logic
+         */
+        function validateForm() {
+            let isValid = true;
+
+            // 1. Check Name
+            const nameInput = document.getElementById('nameInput');
+            if (!nameInput.value.trim()) {
+                showFieldError('name', nameInput);
+                isValid = false;
+            }
+
+            // 2. Check Date
+            const dateInput = document.getElementById('dateInput');
+            if (!dateInput.value) {
+                showFieldError('date', dateInput);
+                isValid = false;
+            }
+
+            // 3. Check Session Radio
+            const sessionSelected = document.querySelector('input[name="session"]:checked');
+            if (!sessionSelected) {
+                document.getElementById('sessionError').classList.remove('hidden');
+                isValid = false;
+            }
+
+            // 4. Check Instructor Rating
+            if (selectedRatings.instructor === 0) {
+                document.getElementById('instructorRatingError').classList.remove('hidden');
+                isValid = false;
+            }
+
+            // 5. Check Content Rating
+            if (selectedRatings.content === 0) {
+                document.getElementById('contentRatingError').classList.remove('hidden');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(fieldKey, element) {
+            const errorEl = document.getElementById(`${fieldKey}Error`);
+            if (errorEl) errorEl.classList.remove('hidden');
+            if (element) {
+                element.classList.add('border-rose-500', 'bg-rose-50/30');
+                element.classList.remove('border-slate-200');
+            }
+        }
+
+        function clearFieldError(fieldKey) {
+            const errorEl = document.getElementById(`${fieldKey}Error`);
+            if (errorEl) errorEl.classList.add('hidden');
+
+            const inputEl = document.getElementById(`${fieldKey}Input`);
+            if (inputEl) {
+                inputEl.classList.remove('border-rose-500', 'bg-rose-50/30');
+                inputEl.classList.add('border-slate-200');
+            }
+        }
+
+        /**
+         * STREAMING_CHUNK:Handling form submission and API integration...
+         * Form Submit Event Handler
+         */
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                // Scroll to top of form smoothly on error
+                document.getElementById('surveyForm').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // Disable submit button and show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            submitBtn.disabled = true;
+            submitBtnText.textContent = '傳送中...';
+            submitSpinner.classList.remove('hidden');
+
+            // Gather Form Data
+            const form = event.target;
+            const checkedSkills = Array.from(form.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value);
+
+            const formData = {
+                name: document.getElementById('nameInput').value.trim(),             /* Key: name */
+                date: document.getElementById('dateInput').value,                  /* Key: date */
+                session: form.querySelector('input[name="session"]:checked').value,  /* Key: session */
+                instructor_rating: selectedRatings.instructor,                      /* Key: instructor_rating */
+                content_rating: selectedRatings.content,                            /* Key: content_rating */
+                skills: checkedSkills,                                              /* Key: skills */
+                feedback: document.getElementById('feedbackInput').value.trim(),    /* Key: feedback */
+                submitted_at: new Date().toISOString()
+            };
+
+            // Send via Fetch API
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+            } catch (error) {
+                console.warn('Fetch sent or failed silently to fallback summary view:', error);
+            }
+
+            // Restore submit button state
+            submitBtn.disabled = false;
+            submitBtnText.textContent = '送出問卷';
+            submitSpinner.classList.add('hidden');
+
+            // Show summary & thank you screen
+            showThankYouScreen(formData);
+        }
+
+        /**
+         * STREAMING_CHUNK:Populating data summary card upon completion...
+         * Render Thank You Summary
+         */
+        function showThankYouScreen(data) {
+            document.getElementById('surveyForm').classList.add('hidden');
+            const thankYouSec = document.getElementById('thankYouSection');
+            thankYouSec.classList.remove('hidden');
+
+            // Render Formatted Values
+            document.getElementById('summaryName').textContent = data.name;
+            document.getElementById('summaryDate').textContent = data.date;
+            document.getElementById('summarySession').textContent = data.session;
+
+            // Rating Stars Summary
+            document.getElementById('summaryInstructorRating').innerHTML = renderStarsSVG(data.instructor_rating);
+            document.getElementById('summaryContentRating').innerHTML = renderStarsSVG(data.content_rating);
+
+            // Skills Summary Pills
+            const skillsContainer = document.getElementById('summarySkills');
+            if (data.skills.length > 0) {
+                skillsContainer.innerHTML = data.skills.map(skill => 
+                    `<span class="px-2.5 py-1 rounded-full text-xs bg-purple-100 text-purple-700 font-medium">${skill}</span>`
+                ).join('');
+            } else {
+                skillsContainer.innerHTML = `<span class="text-slate-400 text-xs italic">無勾選技能選項</span>`;
+            }
+
+            // Feedback Summary
+            document.getElementById('summaryFeedback').textContent = data.feedback || '（未提供額外建議）';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderStarsSVG(rating) {
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const colorClass = i <= rating ? 'text-amber-400 fill-current' : 'text-slate-200 fill-current';
+                starsHTML += `<svg class="w-4 h-4 ${colorClass}" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`;
+            }
+            return starsHTML + `<span class="text-xs text-slate-500 ml-1 font-medium">(${rating} / 5)</span>`;
+        }
+
+        /**
+         * Reset Form State to Refill
+         */
+        function resetFormState() {
+            document.getElementById('surveyForm').reset();
+            selectedRatings.instructor = 0;
+            selectedRatings.content = 0;
+            
+            updateStarUI('instructor', 0);
+            updateStarUI('content', 0);
+
+            // Hide Error labels
+            ['name', 'date', 'session', 'instructorRating', 'contentRating'].forEach(clearFieldError);
+
+            // Toggle view
+            document.getElementById('thankYouSection').classList.add('hidden');
+            document.getElementById('surveyForm').classList.remove('hidden');
+
+            // Default date picker to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+        }
+
+        // Initialize default date on load
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+        };
+    </script>
+</body>
+</html>
