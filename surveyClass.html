@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>精英培訓 - 課程滿意度調查問卷</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', '"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            accent: '#ec4899',
+                        }
+                    },
+                    boxShadow: {
+                        'card': '0 20px 40px -15px rgba(99, 102, 241, 0.12), 0 0 15px 0 rgba(0, 0, 0, 0.03)',
+                        'hover': '0 25px 50px -12px rgba(79, 70, 229, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Modern Gradient & Animated Background */
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #f3e8ff 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* Ambient Glow Blobs */
+        .ambient-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.45;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #818cf8; }
+        .blob-2 { bottom: -10%; right: -5%; width: 450px; height: 450px; background: #c084fc; }
+
+        /* Star Rating Animations */
+        .star-btn {
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+        }
+        .star-btn:hover, .star-btn.hovered {
+            transform: scale(1.25) rotate(-5deg);
+        }
+        .star-btn.active {
+            color: #f59e0b;
+        }
+
+        /* Pill Radio Custom Input */
+        .radio-pill input:checked + label {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff;
+            border-color: #4f46e5;
+            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.35);
+            transform: translateY(-2px);
+        }
+
+        /* Checkbox Chip Custom Input */
+        .checkbox-chip input:checked + label {
+            background-color: #e0e7ff;
+            color: #3730a3;
+            border-color: #6366f1;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+        }
+        .checkbox-chip input:checked + label .check-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Shake animation on error */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .has-error {
+            animation: shake 0.4s ease-in-out;
+            border-color: #ef4444 !important;
+        }
+
+        /* Custom Input Focus Ring */
+        .input-field {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-field:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Card transition */
+        .fade-in-up {
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased font-sans py-8 md:py-14 px-4 sm:px-6 relative overflow-x-hidden">
+
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+
+    <main class="max-w-3xl mx-auto relative z-10">
+        
+        <header class="text-center mb-8 fade-in-up">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100/80 border border-indigo-200 text-brand-700 text-xs font-semibold tracking-wide uppercase mb-3 backdrop-blur-md">
+                <span class="w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+                問卷意見調查 🌟 Survey
+            </div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+                課程學習滿意度調查
+            </h1>
+            <p class="text-slate-600 text-base sm:text-lg max-w-xl mx-auto font-medium">
+                誠摯邀請您分享寶貴的學習體驗，讓我們能持續精進教學品質與課程設計！
+            </p>
+        </header>
+
+        <div id="surveyCard" class="bg-white/90 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-white/80 shadow-card fade-in-up transition-all duration-300">
+            <form id="surveyForm" novalidate class="space-y-8">
+
+                <!-- Q1: 姓名 (Name) -->
+                <!-- Key in JSON payload: userName -->
+                <div class="form-group space-y-2" id="group-userName">
+                    <label for="userName" class="block text-slate-800 font-bold text-base sm:text-lg">
+                        1. 您的姓名 <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+                        <input type="text" id="userName" name="userName" required placeholder="請輸入您的完整姓名"
+                            class="input-field w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 font-medium">
+                    </div>
+                    <p class="error-msg hidden text-xs text-rose-500 font-semibold flex items-center gap-1 mt-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> 請填寫姓名欄位
+                    </p>
+                </div>
+
+                <!-- Q2: 上課日期 (Course Date) -->
+                <!-- Key in JSON payload: courseDate -->
+                <div class="form-group space-y-2" id="group-courseDate">
+                    <label for="courseDate" class="block text-slate-800 font-bold text-base sm:text-lg">
+                        2. 上課日期 <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-regular fa-calendar-days"></i>
+                        </div>
+                        <input type="date" id="courseDate" name="courseDate" required
+                            class="input-field w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:outline-none focus:bg-white focus:border-indigo-500 font-medium">
+                    </div>
+                    <p class="error-msg hidden text-xs text-rose-500 font-semibold flex items-center gap-1 mt-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> 請選擇上課日期
+                    </p>
+                </div>
+
+                <!-- Q3: 課程場次 (Session) -->
+                <!-- Key in JSON payload: session -->
+                <div class="form-group space-y-3" id="group-session">
+                    <label class="block text-slate-800 font-bold text-base sm:text-lg">
+                        3. 課程場次 <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="radio-pill">
+                            <input type="radio" id="session-morning" name="session" value="早班" class="hidden">
+                            <label for="session-morning" class="flex flex-col sm:flex-row items-center justify-center gap-2 p-3 sm:py-3.5 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-bold text-sm sm:text-base transition-all duration-200 hover:bg-slate-100">
+                                <i class="fa-regular fa-sun text-amber-500 text-base"></i> 早班
+                            </label>
+                        </div>
+                        <div class="radio-pill">
+                            <input type="radio" id="session-afternoon" name="session" value="午班" class="hidden">
+                            <label for="session-afternoon" class="flex flex-col sm:flex-row items-center justify-center gap-2 p-3 sm:py-3.5 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-bold text-sm sm:text-base transition-all duration-200 hover:bg-slate-100">
+                                <i class="fa-solid fa-sun text-orange-500 text-base"></i> 午班
+                            </label>
+                        </div>
+                        <div class="radio-pill">
+                            <input type="radio" id="session-evening" name="session" value="晚班" class="hidden">
+                            <label for="session-evening" class="flex flex-col sm:flex-row items-center justify-center gap-2 p-3 sm:py-3.5 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-bold text-sm sm:text-base transition-all duration-200 hover:bg-slate-100">
+                                <i class="fa-regular fa-moon text-indigo-500 text-base"></i> 晚班
+                            </label>
+                        </div>
+                    </div>
+                    <p class="error-msg hidden text-xs text-rose-500 font-semibold flex items-center gap-1 mt-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> 請選擇一項課程場次
+                    </p>
+                </div>
+
+                <!-- Q4: 講師教學表現 (Teacher Rating) -->
+                <!-- Key in JSON payload: teacherRating -->
+                <div class="form-group space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-100" id="group-teacherRating">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-slate-800 font-bold text-base sm:text-lg">
+                            4. 講師教學表現 <span class="text-rose-500">*</span>
+                        </label>
+                        <span id="teacherRatingText" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">尚未評分</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">包含教學熱忱、表達清晰度、互動與答疑</p>
+                    <input type="hidden" name="teacherRating" id="teacherRating" value="0">
+                    <div class="star-rating flex items-center gap-2 sm:gap-3 py-1" data-rating-id="teacherRating">
+                        <button type="button" data-val="1" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="2" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="3" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="4" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="5" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                    </div>
+                    <p class="error-msg hidden text-xs text-rose-500 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> 請點擊星等進行評分 (1-5分)
+                    </p>
+                </div>
+
+                <!-- Q5: 課程內容實用性 (Content Rating) -->
+                <!-- Key in JSON payload: contentRating -->
+                <div class="form-group space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-100" id="group-contentRating">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-slate-800 font-bold text-base sm:text-lg">
+                            5. 課程內容實用性 <span class="text-rose-500">*</span>
+                        </label>
+                        <span id="contentRatingText" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">尚未評分</span>
+                    </div>
+                    <p class="text-xs text-slate-500 font-medium">包含教材品質、實務案例連結度、學習收穫</p>
+                    <input type="hidden" name="contentRating" id="contentRating" value="0">
+                    <div class="star-rating flex items-center gap-2 sm:gap-3 py-1" data-rating-id="contentRating">
+                        <button type="button" data-val="1" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="2" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="3" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="4" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" data-val="5" class="star-btn text-3xl sm:text-4xl text-slate-300 focus:outline-none"><i class="fa-solid fa-star"></i></button>
+                    </div>
+                    <p class="error-msg hidden text-xs text-rose-500 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-circle-exclamation"></i> 請點擊星等進行評分 (1-5分)
+                    </p>
+                </div>
+
+                <!-- Q6: 學習到的技能 (Skills Learned - Checkbox) -->
+                <!-- Key in JSON payload: skills -->
+                <div class="form-group space-y-3" id="group-skills">
+                    <label class="block text-slate-800 font-bold text-base sm:text-lg">
+                        6. 學習到的技能 <span class="text-xs text-slate-400 font-normal">（可複選）</span>
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="checkbox-chip">
+                            <input type="checkbox" id="skill-1" name="skills" value="前端網頁開發技術" class="hidden">
+                            <label for="skill-1" class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-semibold text-sm transition-all duration-200 hover:bg-slate-100">
+                                <span class="w-5 h-5 rounded-lg border border-slate-300 flex items-center justify-center bg-white text-indigo-600 transition-all">
+                                    <i class="fa-solid fa-check check-icon opacity-0 transition-opacity text-xs"></i>
+                                </span>
+                                💻 前端網頁開發技術
+                            </label>
+                        </div>
+                        <div class="checkbox-chip">
+                            <input type="checkbox" id="skill-2" name="skills" value="UI/UX 介面視覺設計" class="hidden">
+                            <label for="skill-2" class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-semibold text-sm transition-all duration-200 hover:bg-slate-100">
+                                <span class="w-5 h-5 rounded-lg border border-slate-300 flex items-center justify-center bg-white text-indigo-600 transition-all">
+                                    <i class="fa-solid fa-check check-icon opacity-0 transition-opacity text-xs"></i>
+                                </span>
+                                🎨 UI/UX 介面視覺設計
+                            </label>
+                        </div>
+                        <div class="checkbox-chip">
+                            <input type="checkbox" id="skill-3" name="skills" value="跨團隊敏捷溝通" class="hidden">
+                            <label for="skill-3" class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-semibold text-sm transition-all duration-200 hover:bg-slate-100">
+                                <span class="w-5 h-5 rounded-lg border border-slate-300 flex items-center justify-center bg-white text-indigo-600 transition-all">
+                                    <i class="fa-solid fa-check check-icon opacity-0 transition-opacity text-xs"></i>
+                                </span>
+                                🤝 跨團隊敏捷溝通
+                            </label>
+                        </div>
+                        <div class="checkbox-chip">
+                            <input type="checkbox" id="skill-4" name="skills" value="專案時程與風險管理" class="hidden">
+                            <label for="skill-4" class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-semibold text-sm transition-all duration-200 hover:bg-slate-100">
+                                <span class="w-5 h-5 rounded-lg border border-slate-300 flex items-center justify-center bg-white text-indigo-600 transition-all">
+                                    <i class="fa-solid fa-check check-icon opacity-0 transition-opacity text-xs"></i>
+                                </span>
+                                📊 專案時程與風險管理
+                            </label>
+                        </div>
+                        <div class="checkbox-chip sm:col-span-2">
+                            <input type="checkbox" id="skill-5" name="skills" value="AI 輔助開發與自動化應用" class="hidden">
+                            <label for="skill-5" class="flex items-center gap-3 p-3 border border-slate-200 bg-slate-50 rounded-2xl cursor-pointer text-slate-700 font-semibold text-sm transition-all duration-200 hover:bg-slate-100">
+                                <span class="w-5 h-5 rounded-lg border border-slate-300 flex items-center justify-center bg-white text-indigo-600 transition-all">
+                                    <i class="fa-solid fa-check check-icon opacity-0 transition-opacity text-xs"></i>
+                                </span>
+                                🤖 AI 輔助開發與自動化應用
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Q7: 整體建議 (Suggestions) -->
+                <!-- Key in JSON payload: feedback -->
+                <div class="form-group space-y-2" id="group-feedback">
+                    <label for="feedback" class="block text-slate-800 font-bold text-base sm:text-lg">
+                        7. 整體建議與寶貴心得
+                    </label>
+                    <textarea id="feedback" name="feedback" rows="4" placeholder="請寫下您對課程、講師或講義的其他建議，幫助我們變得更好..."
+                        class="input-field w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 font-medium resize-none"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-4">
+                    <button type="submit" id="submitBtn"
+                        class="w-full py-4 px-8 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-lg shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-3">
+                        <span id="btnText">確認送出問卷</span>
+                        <i id="btnIcon" class="fa-solid fa-paper-plane text-base"></i>
+                        <svg id="loadingSpinner" class="hidden animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Post-Submission Thank You View (Hidden initially) -->
+        <div id="thankYouCard" class="hidden bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-10 border border-white/80 shadow-card fade-in-up">
+            <div class="text-center space-y-4 mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 text-4xl shadow-inner mb-2 animate-bounce">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">感謝您撥空填寫問卷！</h2>
+                <p class="text-slate-600 text-base font-medium max-w-md mx-auto">
+                    您的寶貴意見對我們非常重要 🙏 我們將仔細閱讀每一條建議並持續升級課程體驗！
+                </p>
+            </div>
+
+            <!-- Submitted Data Summary Card -->
+            <div class="bg-slate-50/90 rounded-2xl p-6 border border-slate-200 space-y-4 mb-8">
+                <div class="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check text-indigo-600"></i> 您提交的問卷摘要
+                    </h3>
+                    <span class="text-xs font-bold text-slate-400" id="summaryTime">--:--</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block mb-0.5">學員姓名</span>
+                        <span class="font-bold text-slate-800 text-base" id="sumName">-</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block mb-0.5">上課日期與場次</span>
+                        <span class="font-bold text-slate-800" id="sumDateSession">-</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block mb-0.5">講師教學評分</span>
+                        <div class="flex items-center gap-1.5 text-amber-500 font-bold" id="sumTeacherRating">-</div>
+                    </div>
+                    <div>
+                        <span class="text-xs text-slate-400 font-semibold block mb-0.5">課程實用評分</span>
+                        <div class="flex items-center gap-1.5 text-amber-500 font-bold" id="sumContentRating">-</div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200/60">
+                    <span class="text-xs text-slate-400 font-semibold block mb-1.5">學習獲得的技能</span>
+                    <div class="flex flex-wrap gap-1.5" id="sumSkills">
+                        <!-- Skill tags will be injected here -->
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-200/60">
+                    <span class="text-xs text-slate-400 font-semibold block mb-1">寶貴心得與建議</span>
+                    <div class="p-3 bg-white rounded-xl border border-slate-200/70 text-slate-700 italic text-sm leading-relaxed" id="sumFeedback">
+                        無填寫建議
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <button id="resetBtn" type="button"
+                class="w-full py-3.5 px-6 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-base shadow-md transition-all duration-200 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-right"></i>
+                再填寫一份問卷
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        /**
+         * Google Apps Script Web App URL Placeholder
+         * 如果有 Google Sheet 後端，可將部署好的 Apps Script URL 替換於此。
+         * 即使維持空字串，前端仍會正常模擬發送並流暢切換至感謝頁面。
+         */
+        const GOOGLE_SCRIPT_URL = ""; 
+
+        // Star rating textual feedback descriptions
+        const ratingLabels = {
+            1: '1分 - 尚需改進',
+            2: '2分 - 普通滿意',
+            3: '3分 - 符合預期',
+            4: '4分 - 非常滿意',
+            5: '5分 - 超乎預期 ⭐'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initStarRatings();
+            initFormValidation();
+            setDefaultDate();
+        });
+
+        // Set default date picker to today
+        function setDefaultDate() {
+            const dateInput = document.getElementById('courseDate');
+            if (dateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+        }
+
+        /**
+         * 星等評分互動邏輯 (Hover, Click, Style updates)
+         */
+        function initStarRatings() {
+            const ratingContainers = document.querySelectorAll('.star-rating');
+
+            ratingContainers.forEach(container => {
+                const hiddenInputId = container.getAttribute('data-rating-id');
+                const hiddenInput = document.getElementById(hiddenInputId);
+                const textLabel = document.getElementById(hiddenInputId + 'Text');
+                const stars = container.querySelectorAll('.star-btn');
+
+                stars.forEach((star, index) => {
+                    const ratingValue = index + 1;
+
+                    // Hover effects
+                    star.addEventListener('mouseenter', () => {
+                        highlightStars(stars, ratingValue);
+                    });
+
+                    // Mouse leave restores saved value
+                    container.addEventListener('mouseleave', () => {
+                        const currentVal = parseInt(hiddenInput.value) || 0;
+                        highlightStars(stars, currentVal);
+                    });
+
+                    // Click handler
+                    star.addEventListener('click', () => {
+                        hiddenInput.value = ratingValue;
+                        highlightStars(stars, ratingValue);
+                        if (textLabel) {
+                            textLabel.textContent = ratingLabels[ratingValue] || `${ratingValue} 分`;
+                        }
+                        
+                        // Clear error styling if present
+                        const group = document.getElementById(`group-${hiddenInputId}`);
+                        if (group) {
+                            group.classList.remove('has-error');
+                            const errMsg = group.querySelector('.error-msg');
+                            if (errMsg) errMsg.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        }
+
+        function highlightStars(stars, value) {
+            stars.forEach((s, idx) => {
+                if (idx < value) {
+                    s.classList.add('active');
+                    s.classList.remove('text-slate-300');
+                    s.classList.add('text-amber-400');
+                } else {
+                    s.classList.remove('active');
+                    s.classList.remove('text-amber-400');
+                    s.classList.add('text-slate-300');
+                }
+            });
+        }
+
+        /**
+         * 表單驗證與送出處理
+         */
+        function initFormValidation() {
+            const form = document.getElementById('surveyForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resetBtn = document.getElementById('resetBtn');
+
+            // Form Submit Event
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const isValid = validateForm();
+                if (!isValid) {
+                    // Scroll to first error
+                    const firstError = document.querySelector('.has-error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+
+                // Gather Form Data
+                // JSON Keys Map:
+                // userName, courseDate, session, teacherRating, contentRating, skills, feedback
+                const formData = {
+                    userName: form.userName.value.trim(),
+                    courseDate: form.courseDate.value,
+                    session: form.querySelector('input[name="session"]:checked')?.value || '',
+                    teacherRating: parseInt(form.teacherRating.value),
+                    contentRating: parseInt(form.contentRating.value),
+                    skills: Array.from(form.querySelectorAll('input[name="skills"]:checked')).map(cb => cb.value),
+                    feedback: form.feedback.value.trim() || '（無特別建議）',
+                    submittedAt: new Date().toLocaleString('zh-TW')
+                };
+
+                // Show Loading State
+                submitBtn.disabled = true;
+                btnText.textContent = '提交中...';
+                btnIcon.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+
+                try {
+                    if (GOOGLE_SCRIPT_URL) {
+                        // Attempt POST to API
+                        await fetch(GOOGLE_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(formData),
+                            mode: 'no-cors' // Common for Apps Script Web App
+                        });
+                    } else {
+                        // Simulate short network delay for seamless user experience
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
+                } catch (error) {
+                    console.warn('API submission failed or offline, rendering local summary:', error);
+                } finally {
+                    // Restore button UI
+                    submitBtn.disabled = false;
+                    btnText.textContent = '確認送出問卷';
+                    btnIcon.classList.remove('hidden');
+                    loadingSpinner.classList.add('hidden');
+
+                    // Show Thank You Card & Populate Summary
+                    showThankYouPage(formData);
+                }
+            });
+
+            // Reset Button Event
+            resetBtn.addEventListener('click', () => {
+                form.reset();
+                
+                // Clear stars
+                document.getElementById('teacherRating').value = '0';
+                document.getElementById('contentRating').value = '0';
+                document.getElementById('teacherRatingText').textContent = '尚未評分';
+                document.getElementById('contentRatingText').textContent = '尚未評分';
+                highlightStars(document.querySelectorAll('#group-teacherRating .star-btn'), 0);
+                highlightStars(document.querySelectorAll('#group-contentRating .star-btn'), 0);
+
+                // Reset error borders
+                document.querySelectorAll('.form-group').forEach(grp => grp.classList.remove('has-error'));
+                document.querySelectorAll('.error-msg').forEach(msg => msg.classList.add('hidden'));
+
+                setDefaultDate();
+
+                // Switch Views
+                document.getElementById('thankYouCard').classList.add('hidden');
+                document.getElementById('surveyCard').classList.remove('hidden');
+
+                // Smooth scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            document.querySelectorAll('.form-group').forEach(grp => grp.classList.remove('has-error'));
+            document.querySelectorAll('.error-msg').forEach(msg => msg.classList.add('hidden'));
+
+            // 1. 姓名
+            const userName = document.getElementById('userName');
+            if (!userName.value.trim()) {
+                showFieldError('userName');
+                isValid = false;
+            }
+
+            // 2. 日期
+            const courseDate = document.getElementById('courseDate');
+            if (!courseDate.value) {
+                showFieldError('courseDate');
+                isValid = false;
+            }
+
+            // 3. 場次
+            const sessionChecked = document.querySelector('input[name="session"]:checked');
+            if (!sessionChecked) {
+                showFieldError('session');
+                isValid = false;
+            }
+
+            // 4. 講師評分
+            const teacherRating = document.getElementById('teacherRating').value;
+            if (parseInt(teacherRating) <= 0) {
+                showFieldError('teacherRating');
+                isValid = false;
+            }
+
+            // 5. 內容評分
+            const contentRating = document.getElementById('contentRating').value;
+            if (parseInt(contentRating) <= 0) {
+                showFieldError('contentRating');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(fieldId) {
+            const group = document.getElementById(`group-${fieldId}`);
+            if (group) {
+                group.classList.add('has-error');
+                const errMsg = group.querySelector('.error-msg');
+                if (errMsg) errMsg.classList.remove('hidden');
+            }
+        }
+
+        function showThankYouPage(data) {
+            // Fill Summary Details
+            document.getElementById('sumName').textContent = data.userName;
+            document.getElementById('sumDateSession').textContent = `${data.courseDate} (${data.session})`;
+            document.getElementById('summaryTime').textContent = data.submittedAt;
+
+            // Rating Stars Display
+            document.getElementById('sumTeacherRating').innerHTML = `${data.teacherRating} 分 ` + '★'.repeat(data.teacherRating);
+            document.getElementById('sumContentRating').innerHTML = `${data.contentRating} 分 ` + '★'.repeat(data.contentRating);
+
+            // Skills render
+            const skillsContainer = document.getElementById('sumSkills');
+            skillsContainer.innerHTML = '';
+            if (data.skills && data.skills.length > 0) {
+                data.skills.forEach(skill => {
+                    const tag = document.createElement('span');
+                    tag.className = 'px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold inline-block';
+                    tag.textContent = skill;
+                    skillsContainer.appendChild(tag);
+                });
+            } else {
+                skillsContainer.innerHTML = '<span class="text-xs text-slate-400">未勾選特定技能</span>';
+            }
+
+            // Feedback render
+            document.getElementById('sumFeedback').textContent = data.feedback;
+
+            // Switch Card Display
+            document.getElementById('surveyCard').classList.add('hidden');
+            document.getElementById('thankYouCard').classList.remove('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
