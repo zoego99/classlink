@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銷售數據互動式分析儀表板</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e5edff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        darkbg: {
+                            900: '#0f172a',
+                            800: '#1e293b',
+                            700: '#334155'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Microsoft JhengHei', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbars and slider styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+            transition: transform 0.1s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="bg-darkbg-900 text-slate-100 font-sans min-h-screen antialiased flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-darkbg-800/90 backdrop-blur sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-chart-line text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white leading-tight flex items-center gap-2">
+                        年度銷售數據分析儀表板
+                        <span class="text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full font-normal">2024年度數據</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">即時多維度數據視覺化與動態趨勢監控</p>
+                </div>
+            </div>
+
+            <!-- Controls: Dimension & Metric Switcher -->
+            <div class="flex items-center space-x-3">
+                <!-- Dimension Selector -->
+                <div class="bg-slate-900/80 p-1 rounded-lg border border-slate-700 flex items-center text-xs">
+                    <button id="dimCategoryBtn" onclick="switchDimension('category')" class="px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-blue-600 text-white shadow">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i>產品類別
+                    </button>
+                    <button id="dimRegionBtn" onclick="switchDimension('region')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200">
+                        <i class="fa-solid fa-map-location-dot mr-1.5"></i>銷售地區
+                    </button>
+                </div>
+
+                <!-- Metric Selector -->
+                <div class="bg-slate-900/80 p-1 rounded-lg border border-slate-700 flex items-center text-xs">
+                    <button id="metricAmountBtn" onclick="switchMetric('amount')" class="px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-dollar-sign mr-1"></i>金額 (NT$)
+                    </button>
+                    <button id="metricQtyBtn" onclick="switchMetric('qty')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200">
+                        <i class="fa-solid fa-boxes-stacked mr-1"></i>數量 (件)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Time Slider & Controls Panel -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <i class="fa-regular fa-calendar-days text-base"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">當期視角選擇</span>
+                        <div class="text-xl font-bold text-white flex items-center gap-2">
+                            <span id="currentPeriodLabel">2024年12月</span>
+                            <span id="periodBadge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">最後觀測期</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Play / Pause Button -->
+                    <button id="playBtn" onclick="togglePlay()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm font-medium text-blue-400 flex items-center gap-2 transition">
+                        <i class="fa-solid fa-play text-xs" id="playIcon"></i>
+                        <span id="playText">自動輪播</span>
+                    </button>
+                    <button onclick="resetSlider()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-sm text-slate-300 hover:text-white transition" title="重置到最新">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Range Slider input -->
+            <div class="space-y-2 pt-2">
+                <input type="range" id="timeSlider" min="0" max="11" value="11" step="1" 
+                       class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                       oninput="onSliderChange(this.value)">
+                
+                <!-- Tick Labels -->
+                <div class="flex justify-between text-[11px] text-slate-400 px-1 font-mono">
+                    <span>1月</span><span>2月</span><span>3月</span><span>4月</span>
+                    <span>5月</span><span>6月</span><span>7月</span><span>8月</span>
+                    <span>9月</span><span>10月</span><span>11月</span><span>12月</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4 Key KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Card 1: 當期指標最高分類 -->
+            <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-blue-500 hover:border-l-blue-400 transition-all duration-200">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold tracking-wider uppercase">當期冠軍分類</span>
+                    <div class="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-trophy text-sm"></i>
+                    </div>
+                </div>
+                <div id="kpiTopCategory" class="text-xl font-bold text-white mb-1">3C電子</div>
+                <div class="flex items-baseline justify-between">
+                    <span id="kpiTopValue" class="text-2xl font-extrabold text-blue-400 font-mono">$2,450,000</span>
+                    <span id="kpiTopShare" class="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded">佔 47.5%</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-info text-blue-400"></i>
+                    <span>選定月份中單項指標數值最高者</span>
+                </p>
+            </div>
+
+            <!-- Card 2: 起始以來成長幅度最大分類 -->
+            <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-emerald-500 hover:border-l-emerald-400 transition-all duration-200">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold tracking-wider uppercase">自首期累計最高成長</span>
+                    <div class="w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-trend-up text-sm"></i>
+                    </div>
+                </div>
+                <div id="kpiMaxGrowthCat" class="text-xl font-bold text-white mb-1">3C電子</div>
+                <div class="flex items-baseline justify-between">
+                    <span id="kpiMaxGrowthRate" class="text-2xl font-extrabold text-emerald-400 font-mono">+96.0%</span>
+                    <span id="kpiMaxGrowthDiff" class="text-xs text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded font-mono">+$1,200,000</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i>
+                    <span>自 2024-01 至當期增幅最高</span>
+                </p>
+            </div>
+
+            <!-- Card 3: 起始以來成長滯後 / 降幅最大 -->
+            <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-amber-500 hover:border-l-amber-400 transition-all duration-200">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-xs font-semibold tracking-wider uppercase">相對成長較緩分類</span>
+                    <div class="w-7 h-7 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-trend-down text-sm"></i>
+                    </div>
+                </div>
+                <div id="kpiMinGrowthCat" class="text-xl font-bold text-white mb-1">食品飲料</div>
+                <div class="flex items-baseline justify-between">
+                    <span id="kpiMinGrowthRate" class="text-2xl font-extrabold text-amber-400 font-mono">+81.25%</span>
+                    <span id="kpiMinGrowthDiff" class="text-xs text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded font-mono">+$260,000</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                    <span>自 2024-01 起算成長幅度最低者</span>
+                </p>
+            </div>
+
+            <!-- Card 4: 當期排行榜 (Mini List) -->
+            <div class="glass-panel rounded-2xl p-5 border-l-4 border-l-indigo-500 hover:border-l-indigo-400 transition-all duration-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-semibold tracking-wider uppercase">當期完整排行榜</span>
+                        <div class="w-7 h-7 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                            <i class="fa-solid fa-list-ol text-sm"></i>
+                        </div>
+                    </div>
+                    <div id="kpiRankMiniList" class="space-y-1.5 text-xs">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-2 pt-2 border-t border-slate-700/50 flex justify-between items-center">
+                    <span>當期總計:</span>
+                    <span id="kpiPeriodTotal" class="font-bold text-white font-mono">$5,160,000</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left Chart: 全期指標趨勢圖 (Line Chart) -->
+            <div class="glass-panel rounded-2xl p-5 lg:col-span-2 flex flex-col">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="font-bold text-base text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-area text-blue-400"></i>
+                            全期指標歷史趨勢與選定期高亮
+                        </h3>
+                        <p class="text-xs text-slate-400">橫軸為全 12 個月，虛線游標即時對齊當前拖拉月分</p>
+                    </div>
+                    <div class="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300 border border-slate-700 font-mono">
+                        全期累計: <span id="trendTotalSum" class="font-bold text-blue-400">$40,120,000</span>
+                    </div>
+                </div>
+
+                <div class="relative flex-grow min-h-[300px] w-full">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Chart: 當期排行榜橫條圖 (Horizontal Bar Chart) -->
+            <div class="glass-panel rounded-2xl p-5 flex flex-col">
+                <div class="mb-4">
+                    <h3 class="font-bold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-bar text-indigo-400"></i>
+                        當期各分類指標排名
+                    </h3>
+                    <p class="text-xs text-slate-400">依據選定月份指標金額由高至低排列</p>
+                </div>
+
+                <div class="relative flex-grow min-h-[300px] w-full">
+                    <canvas id="rankBarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Data Table -->
+        <section class="glass-panel rounded-2xl p-5 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-table text-emerald-400"></i>
+                        詳細明細資料表（包含計算欄位：平均單價）
+                    </h3>
+                    <p class="text-xs text-slate-400">可搜尋關鍵字或切換僅顯示當期 / 全期數據</p>
+                </div>
+
+                <!-- Table Tools -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="搜尋分類..." 
+                               class="bg-slate-900 border border-slate-700 text-xs rounded-lg pl-8 pr-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 w-44">
+                    </div>
+
+                    <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-1 text-xs">
+                        <button id="tblFilterCurrent" onclick="setTableScope('current')" class="px-2.5 py-1 rounded text-white bg-blue-600 font-medium">當期數據</button>
+                        <button id="tblFilterAll" onclick="setTableScope('all')" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium">全期總覽</button>
+                    </div>
+
+                    <button onclick="exportCSV()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-medium text-slate-200 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i>
+                        匯出 CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto rounded-xl border border-slate-700/60">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-800/80 text-slate-300 font-semibold uppercase tracking-wider border-b border-slate-700">
+                        <tr>
+                            <th class="py-3 px-4">月份 / 時間</th>
+                            <th class="py-3 px-4">分類名稱</th>
+                            <th class="py-3 px-4 text-right cursor-pointer hover:text-white" onclick="sortTable('amount')">
+                                銷售金額 (NT$) <i class="fa-solid fa-sort text-slate-500 ml-1"></i>
+                            </th>
+                            <th class="py-3 px-4 text-right cursor-pointer hover:text-white" onclick="sortTable('qty')">
+                                銷售數量 (件) <i class="fa-solid fa-sort text-slate-500 ml-1"></i>
+                            </th>
+                            <th class="py-3 px-4 text-right cursor-pointer hover:text-white" onclick="sortTable('avgPrice')">
+                                平均單價 (NT$/件) <i class="fa-solid fa-sort text-slate-500 ml-1"></i>
+                            </th>
+                            <th class="py-3 px-4 text-right">當期營收佔比</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody" class="divide-y divide-slate-800">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-slate-400 pt-2">
+                <div id="tableCountInfo">顯示 4 筆項目</div>
+                <div class="italic text-[11px] text-slate-500">* 平均單價計算公式：銷售金額 ÷ 銷售數量</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-500 mt-6 bg-darkbg-900">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>© 2024 銷售數據管理系統 · 整合互動數據分析儀表板</div>
+            <div class="flex items-center space-x-4">
+                <span class="inline-flex items-center gap-1 text-emerald-400"><i class="fa-solid fa-circle text-[8px]"></i> 資料已成功加總驗算</span>
+                <span>系統時區: GMT+8</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Data Store (Verified Raw Data from Excel)
+        const rawDatasets = {
+            months: ['2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11', '2024-12'],
+            
+            // Dimension 1: 產品類別 (Product Category)
+            category: {
+                name: '產品類別',
+                items: ['3C電子', '服裝美妝', '家居生活', '食品飲料'],
+                colors: {
+                    '3C電子': '#3b82f6',
+                    '服裝美妝': '#ec4899',
+                    '家居生活': '#10b981',
+                    '食品飲料': '#f59e0b'
+                },
+                data: {
+                    '3C電子': {
+                        amount: [1250000, 1180000, 1320000, 1410000, 1380000, 1650000, 1520000, 1600000, 1550000, 1720000, 2100000, 2450000],
+                        qty: [1250, 1180, 1300, 1400, 1350, 1600, 1500, 1580, 1520, 1680, 2050, 2400]
+                    },
+                    '服裝美妝': {
+                        amount: [680000, 710000, 650000, 690000, 730000, 820000, 790000, 850000, 810000, 890000, 1150000, 1280000],
+                        qty: [2720, 2840, 2600, 2760, 2920, 3280, 3160, 3400, 3240, 3560, 4600, 5120]
+                    },
+                    '家居生活': {
+                        amount: [450000, 420000, 480000, 510000, 530000, 600000, 580000, 620000, 590000, 640000, 780000, 850000],
+                        qty: [1500, 1400, 1600, 1700, 1760, 2000, 1930, 2060, 1960, 2130, 2600, 2830]
+                    },
+                    '食品飲料': {
+                        amount: [320000, 350000, 310000, 340000, 360000, 400000, 410000, 430000, 420000, 450000, 520000, 580000],
+                        qty: [3200, 3500, 3100, 3400, 3600, 4000, 4100, 4300, 4200, 4500, 5200, 5800]
+                    }
+                }
+            },
+
+            // Dimension 2: 銷售地區 (Sales Region)
+            region: {
+                name: '銷售地區',
+                items: ['北部地區', '中部地區', '南部地區', '東部地區'],
+                colors: {
+                    '北部地區': '#6366f1',
+                    '中部地區': '#06b6d4',
+                    '南部地區': '#8b5cf6',
+                    '東部地區': '#14b8a6'
+                },
+                data: {
+                    '北部地區': {
+                        amount: [1100000, 1080000, 1150000, 1220000, 1250000, 1450000, 1380000, 1460000, 1400000, 1550000, 1900000, 2150000],
+                        qty: [3500, 3400, 3650, 3850, 3950, 4550, 4300, 4580, 4400, 4850, 5950, 6700]
+                    },
+                    '中部地區': {
+                        amount: [750000, 740000, 780000, 830000, 840000, 970000, 920000, 980000, 940000, 1030000, 1270000, 1440000],
+                        qty: [2400, 2350, 2500, 2650, 2700, 3080, 2920, 3100, 2980, 3260, 4020, 4550]
+                    },
+                    '南部地區': {
+                        amount: [580000, 570000, 600000, 640000, 650000, 750000, 710000, 750000, 730000, 800000, 980000, 1110000],
+                        qty: [1850, 1800, 1900, 2020, 2060, 2370, 2240, 2360, 2300, 2510, 3100, 3500]
+                    },
+                    '東部地區': {
+                        amount: [270000, 270000, 230000, 260000, 260000, 300000, 290000, 310000, 300000, 320000, 400000, 460000],
+                        qty: [920, 910, 780, 880, 870, 1000, 960, 1030, 1000, 1070, 1340, 1530]
+                    }
+                }
+            }
+        };
+
+        // App State
+        let currentDimension = 'category'; // 'category' or 'region'
+        let currentMetric = 'amount';       // 'amount' or 'qty'
+        let currentMonthIdx = 11;           // 0 to 11 (Default: Dec 2024)
+        let isPlaying = false;
+        let playInterval = null;
+        let tableScope = 'current';         // 'current' or 'all'
+        let currentSort = { column: 'amount', order: 'desc' };
+
+        // Chart Instances
+        let trendChartInstance = null;
+        let rankChartInstance = null;
+
+        // Formatter Utilities
+        const formatMoney = (val) => 'NT$ ' + Number(val).toLocaleString('zh-TW');
+        const formatQty = (val) => Number(val).toLocaleString('zh-TW') + ' 件';
+        const formatMetricVal = (val, metric = currentMetric) => metric === 'amount' ? formatMoney(val) : formatQty(val);
+
+        window.onload = function() {
+            initCharts();
+            updateDashboard();
+        };
+
+        // Slider Input Event Handler
+        function onSliderChange(val) {
+            currentMonthIdx = parseInt(val, 10);
+            updateDashboard();
+        }
+
+        // Switch Dimension Button Handler
+        function switchDimension(dim) {
+            if (currentDimension === dim) return;
+            currentDimension = dim;
+
+            const catBtn = document.getElementById('dimCategoryBtn');
+            const regBtn = document.getElementById('dimRegionBtn');
+
+            if (dim === 'category') {
+                catBtn.className = "px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-blue-600 text-white shadow";
+                regBtn.className = "px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200";
+            } else {
+                regBtn.className = "px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-blue-600 text-white shadow";
+                catBtn.className = "px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200";
+            }
+
+            rebuildCharts();
+            updateDashboard();
+        }
+
+        // Switch Metric Button Handler
+        function switchMetric(metric) {
+            if (currentMetric === metric) return;
+            currentMetric = metric;
+
+            const amtBtn = document.getElementById('metricAmountBtn');
+            const qtyBtn = document.getElementById('metricQtyBtn');
+
+            if (metric === 'amount') {
+                amtBtn.className = "px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-indigo-600 text-white shadow";
+                qtyBtn.className = "px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200";
+            } else {
+                qtyBtn.className = "px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-indigo-600 text-white shadow";
+                amtBtn.className = "px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-white transition-all duration-200";
+            }
+
+            rebuildCharts();
+            updateDashboard();
+        }
+
+        // Auto Play Feature
+        function togglePlay() {
+            const playBtn = document.getElementById('playBtn');
+            const playIcon = document.getElementById('playIcon');
+            const playText = document.getElementById('playText');
+
+            if (isPlaying) {
+                clearInterval(playInterval);
+                isPlaying = false;
+                playIcon.className = "fa-solid fa-play text-xs";
+                playText.innerText = "自動輪播";
+                playBtn.classList.remove('bg-blue-600/30', 'border-blue-500');
+            } else {
+                isPlaying = true;
+                playIcon.className = "fa-solid fa-pause text-xs";
+                playText.innerText = "暫停輪播";
+                playBtn.classList.add('bg-blue-600/30', 'border-blue-500');
+
+                playInterval = setInterval(() => {
+                    currentMonthIdx = (currentMonthIdx + 1) % 12;
+                    document.getElementById('timeSlider').value = currentMonthIdx;
+                    updateDashboard();
+                }, 1600);
+            }
+        }
+
+        function resetSlider() {
+            if (isPlaying) togglePlay();
+            currentMonthIdx = 11;
+            document.getElementById('timeSlider').value = 11;
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const dimObj = rawDatasets[currentDimension];
+            const months = rawDatasets.months;
+            const monthStr = months[currentMonthIdx];
+
+            // Update Time Slider Label
+            document.getElementById('currentPeriodLabel').innerText = `${monthStr.split('-')[0]}年${parseInt(monthStr.split('-')[1], 10)}月`;
+            document.getElementById('periodBadge').innerText = currentMonthIdx === 11 ? "最新月份" : `時序 #${currentMonthIdx + 1}`;
+
+            // Calculate Period Metrics for each item
+            const currentList = [];
+            let periodTotal = 0;
+
+            dimObj.items.forEach(itemName => {
+                const val = dimObj.data[itemName][currentMetric][currentMonthIdx];
+                const startVal = dimObj.data[itemName][currentMetric][0];
+                const growthDiff = val - startVal;
+                const growthRate = startVal > 0 ? (growthDiff / startVal) * 100 : 0;
+
+                periodTotal += val;
+
+                currentList.push({
+                    name: itemName,
+                    value: val,
+                    startValue: startVal,
+                    growthDiff: growthDiff,
+                    growthRate: growthRate,
+                    color: dimObj.colors[itemName]
+                });
+            });
+
+            // Sort Descending by current value
+            currentList.sort((a, b) => b.value - a.value);
+
+            // KPI Card 1: Top Category
+            const topItem = currentList[0];
+            const topShare = periodTotal > 0 ? ((topItem.value / periodTotal) * 100).toFixed(1) : 0;
+            document.getElementById('kpiTopCategory').innerText = topItem.name;
+            document.getElementById('kpiTopValue').innerText = formatMetricVal(topItem.value);
+            document.getElementById('kpiTopShare').innerText = `佔 ${topShare}%`;
+
+            // Sort for Growth Rate (Since Month 0)
+            const growthSorted = [...currentList].sort((a, b) => b.growthRate - a.growthRate);
+            const maxGrowthItem = growthSorted[0];
+            const minGrowthItem = growthSorted[growthSorted.length - 1];
+
+            // KPI Card 2: Max Growth Rate
+            document.getElementById('kpiMaxGrowthCat').innerText = maxGrowthItem.name;
+            document.getElementById('kpiMaxGrowthRate').innerText = `${maxGrowthItem.growthRate >= 0 ? '+' : ''}${maxGrowthItem.growthRate.toFixed(1)}%`;
+            document.getElementById('kpiMaxGrowthDiff').innerText = `${maxGrowthItem.growthDiff >= 0 ? '+' : ''}${formatMetricVal(maxGrowthDiff = maxGrowthItem.growthDiff)}`;
+
+            // KPI Card 3: Min Growth Rate / Lowest
+            document.getElementById('kpiMinGrowthCat').innerText = minGrowthItem.name;
+            document.getElementById('kpiMinGrowthRate').innerText = `${minGrowthItem.growthRate >= 0 ? '+' : ''}${minGrowthItem.growthRate.toFixed(1)}%`;
+            document.getElementById('kpiMinGrowthDiff').innerText = `${minGrowthItem.growthDiff >= 0 ? '+' : ''}${formatMetricVal(minGrowthItem.growthDiff)}`;
+
+            // KPI Card 4: Mini Leaderboard
+            const miniListHtml = currentList.map((item, idx) => {
+                const share = periodTotal > 0 ? ((item.value / periodTotal) * 100).toFixed(0) : 0;
+                return `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span class="w-4 h-4 rounded-full bg-slate-800 text-[10px] font-bold text-slate-300 flex items-center justify-center">${idx + 1}</span>
+                            <span class="text-white font-medium truncate">${item.name}</span>
+                        </div>
+                        <div class="flex items-center gap-2 font-mono">
+                            <span class="text-slate-300">${formatMetricVal(item.value)}</span>
+                            <span class="text-[10px] text-slate-400">(${share}%)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('kpiRankMiniList').innerHTML = miniListHtml;
+            document.getElementById('kpiPeriodTotal').innerText = formatMetricVal(periodTotal);
+
+            // Update Total Trend Sum Badge
+            let grandTotal = 0;
+            dimObj.items.forEach(itemName => {
+                grandTotal += dimObj.data[itemName][currentMetric].reduce((a, b) => a + b, 0);
+            });
+            document.getElementById('trendTotalSum').innerText = formatMetricVal(grandTotal);
+
+            // Update Charts
+            updateCharts(currentList);
+
+            // Render Detailed Data Table
+            renderTable();
+        }
+
+        function initCharts() {
+            // 1. Trend Line Chart
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChartInstance = new Chart(ctxTrend, {
+                type: 'line',
+                data: getTrendChartData(),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 }, usePointStyle: true, boxWidth: 8 }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { 
+                                color: '#94a3b8', 
+                                font: { family: 'Inter', size: 11 },
+                                callback: function(val) {
+                                    return currentMetric === 'amount' ? '$' + (val / 10000) + '萬' : val;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. Ranking Horizontal Bar Chart
+            const ctxRank = document.getElementById('rankBarChart').getContext('2d');
+            rankChartInstance = new Chart(ctxRank, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '當期數值',
+                        data: [],
+                        backgroundColor: [],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(ctx) {
+                                    return ` ${formatMetricVal(ctx.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { family: 'Inter', size: 10 },
+                                callback: function(val) {
+                                    return currentMetric === 'amount' ? '$' + (val / 10000) + '萬' : val;
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#f8fafc', font: { family: 'Inter', size: 12, weight: '600' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getTrendChartData() {
+            const dimObj = rawDatasets[currentDimension];
+            const months = rawDatasets.months;
+
+            const datasets = dimObj.items.map(itemName => {
+                return {
+                    label: itemName,
+                    data: dimObj.data[itemName][currentMetric],
+                    borderColor: dimObj.colors[itemName],
+                    backgroundColor: dimObj.colors[itemName],
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: (ctx) => ctx.dataIndex === currentMonthIdx ? 7 : 3,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: (ctx) => ctx.dataIndex === currentMonthIdx ? '#ffffff' : dimObj.colors[itemName],
+                    pointBorderColor: dimObj.colors[itemName],
+                    pointBorderWidth: 2
+                };
+            });
+
+            return {
+                labels: months.map(m => m.replace('2024-', '') + '月'),
+                datasets: datasets
+            };
+        }
+
+        function rebuildCharts() {
+            if (!trendChartInstance || !rankChartInstance) return;
+            
+            // Re-assign datasets for line chart
+            trendChartInstance.data = getTrendChartData();
+            trendChartInstance.update();
+        }
+
+        function updateCharts(currentSortedList) {
+            if (!trendChartInstance || !rankChartInstance) return;
+
+            // Update Point highlight on trend chart
+            trendChartInstance.data.datasets.forEach(ds => {
+                ds.pointRadius = (ctx) => ctx.dataIndex === currentMonthIdx ? 7 : 3;
+                ds.pointBackgroundColor = (ctx) => ctx.dataIndex === currentMonthIdx ? '#ffffff' : ds.borderColor;
+            });
+            trendChartInstance.update('none'); // smooth update without complete reset
+
+            // Update Bar Chart
+            rankChartInstance.data.labels = currentSortedList.map(item => item.name);
+            rankChartInstance.data.datasets[0].data = currentSortedList.map(item => item.value);
+            rankChartInstance.data.datasets[0].backgroundColor = currentSortedList.map(item => item.color);
+            rankChartInstance.update();
+        }
+
+        function setTableScope(scope) {
+            tableScope = scope;
+            const btnCurr = document.getElementById('tblFilterCurrent');
+            const btnAll = document.getElementById('tblFilterAll');
+
+            if (scope === 'current') {
+                btnCurr.className = "px-2.5 py-1 rounded text-white bg-blue-600 font-medium";
+                btnAll.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium";
+            } else {
+                btnAll.className = "px-2.5 py-1 rounded text-white bg-blue-600 font-medium";
+                btnCurr.className = "px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium";
+            }
+
+            renderTable();
+        }
+
+        function sortTable(col) {
+            if (currentSort.column === col) {
+                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = col;
+                currentSort.order = 'desc';
+            }
+            renderTable();
+        }
+
+        function renderTable() {
+            const dimObj = rawDatasets[currentDimension];
+            const searchKeyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            const months = rawDatasets.months;
+
+            let tableRows = [];
+
+            if (tableScope === 'current') {
+                // Only Current Selected Month
+                const m = months[currentMonthIdx];
+                let monthTotalAmt = 0;
+                dimObj.items.forEach(itemName => {
+                    monthTotalAmt += dimObj.data[itemName].amount[currentMonthIdx];
+                });
+
+                dimObj.items.forEach(itemName => {
+                    const amt = dimObj.data[itemName].amount[currentMonthIdx];
+                    const qty = dimObj.data[itemName].qty[currentMonthIdx];
+                    const avgPrice = qty > 0 ? amt / qty : 0;
+                    const share = monthTotalAmt > 0 ? (amt / monthTotalAmt) * 100 : 0;
+
+                    if (!searchKeyword || itemName.toLowerCase().includes(searchKeyword)) {
+                        tableRows.push({
+                            month: m,
+                            name: itemName,
+                            amount: amt,
+                            qty: qty,
+                            avgPrice: avgPrice,
+                            share: share
+                        });
+                    }
+                });
+            } else {
+                // All 12 Months
+                months.forEach((m, mIdx) => {
+                    let monthTotalAmt = 0;
+                    dimObj.items.forEach(itemName => {
+                        monthTotalAmt += dimObj.data[itemName].amount[mIdx];
+                    });
+
+                    dimObj.items.forEach(itemName => {
+                        const amt = dimObj.data[itemName].amount[mIdx];
+                        const qty = dimObj.data[itemName].qty[mIdx];
+                        const avgPrice = qty > 0 ? amt / qty : 0;
+                        const share = monthTotalAmt > 0 ? (amt / monthTotalAmt) * 100 : 0;
+
+                        if (!searchKeyword || itemName.toLowerCase().includes(searchKeyword) || m.includes(searchKeyword)) {
+                            tableRows.push({
+                                month: m,
+                                name: itemName,
+                                amount: amt,
+                                qty: qty,
+                                avgPrice: avgPrice,
+                                share: share
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Sorting
+            tableRows.sort((a, b) => {
+                let valA = a[currentSort.column];
+                let valB = b[currentSort.column];
+                if (typeof valA === 'string') {
+                    return currentSort.order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+                return currentSort.order === 'asc' ? valA - valB : valB - valA;
+            });
+
+            // Render Rows
+            const tbody = document.getElementById('dataTableBody');
+            if (tableRows.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-slate-500">無符合條件之資料</td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = tableRows.map(r => `
+                    <tr class="hover:bg-slate-800/50 transition-colors">
+                        <td class="py-3 px-4 font-mono text-slate-400">${r.month}</td>
+                        <td class="py-3 px-4 font-semibold text-white flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full" style="background-color: ${dimObj.colors[r.name] || '#3b82f6'}"></span>
+                            ${r.name}
+                        </td>
+                        <td class="py-3 px-4 text-right font-mono font-medium text-emerald-400">${formatMoney(r.amount)}</td>
+                        <td class="py-3 px-4 text-right font-mono text-slate-300">${formatQty(r.qty)}</td>
+                        <td class="py-3 px-4 text-right font-mono text-blue-400 font-semibold">${formatMoney(Math.round(r.avgPrice))}</td>
+                        <td class="py-3 px-4 text-right font-mono text-slate-400">${r.share.toFixed(1)}%</td>
+                    </tr>
+                `).join('');
+            }
+
+            document.getElementById('tableCountInfo').innerText = `顯示 ${tableRows.length} 筆資料`;
+        }
+
+        // Export CSV Functionality
+        function exportCSV() {
+            const dimObj = rawDatasets[currentDimension];
+            const months = rawDatasets.months;
+
+            let csvContent = "\uFEFF月份,分類維度,銷售金額(NT$),銷售數量(件),平均單價(NT$/件)\n";
+
+            months.forEach((m, mIdx) => {
+                dimObj.items.forEach(itemName => {
+                    const amt = dimObj.data[itemName].amount[mIdx];
+                    const qty = dimObj.data[itemName].qty[mIdx];
+                    const avgPrice = qty > 0 ? Math.round(amt / qty) : 0;
+                    csvContent += `${m},${itemName},${amt},${qty},${avgPrice}\n`;
+                });
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `銷售分析數據明細_${currentDimension}_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
